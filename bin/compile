@@ -5,7 +5,7 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 
 GHC_VER=7.6.3
-
+CABAL_VERSION=1.18.0.2
 mkdir -p $CACHE_DIR
 
 # Download GHC binaries if we do not have them yet
@@ -46,3 +46,11 @@ if [[ $? -ne 0 ]]; then
   echo "-----> Patching GHC to find libgmp"
   find $BUILD_DIR/vendor/ghc-7.6.3 -type f -executable -exec sh -c "file {} | grep -q ELF" \; -print | xargs -L 1 $CACHE_DIR/patchelf-0.6/src/patchelf --set-rpath /usr/lib:/app/vendor/ghc-libs
 fi
+
+CABAL_URL=http://www.haskell.org/cabal/release/cabal-install-$CABAL_VERSION/cabal-install-$CABAL_VERSION.tar.gz
+curl -# -L "$CABAL_URL" | tar xz -C $CACHE_DIR
+cd $CACHE_DIR/cabal-$CABAL_VERSION
+./bootstrap.sh
+
+cd /app
+cabal install
